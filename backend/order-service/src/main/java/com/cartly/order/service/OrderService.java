@@ -180,6 +180,7 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
         String upperStatus = newStatus.toUpperCase();
+        validateStatusTransition(order.getStatus(), upperStatus);
         order.setStatus(upperStatus);
 
         if ("DELIVERED".equals(upperStatus) && "PENDING".equals(order.getPaymentStatus())) {
@@ -197,6 +198,26 @@ public class OrderService {
         Order updated = orderRepository.save(order);
         log.info("Order {} status updated to {}", orderId, upperStatus);
         return toResponse(updated);
+    }
+
+    private void validateStatusTransition(String currentStatus, String newStatus) {
+        if (currentStatus.equals(newStatus)) {
+            return;
+        }
+
+        Map<String, Set<String>> transitions = Map.of(
+                "PLACED", Set.of("CONFIRMED", "CANCELLED"),
+                "CONFIRMED", Set.of("PROCESSING", "CANCELLED"),
+                "PROCESSING", Set.of("SHIPPED", "CANCELLED"),
+                "SHIPPED", Set.of("OUT_FOR_DELIVERY"),
+                "OUT_FOR_DELIVERY", Set.of("DELIVERED"),
+                "DELIVERED", Set.of(),
+                "CANCELLED", Set.of()
+        );
+
+        if (!transitions.getOrDefault(currentStatus, Set.of()).contains(newStatus)) {
+            throw new BadRequestException("Cannot change order status from " + currentStatus + " to " + newStatus);
+        }
     }
 
     @Transactional

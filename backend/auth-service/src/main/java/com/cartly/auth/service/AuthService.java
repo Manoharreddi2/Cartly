@@ -109,4 +109,27 @@ public class AuthService {
                 .roles(user.getRoles())
                 .build();
     }
+
+    @Transactional
+    public void updatePassword(String authHeader, PasswordUpdateRequest request) {
+        String token = authHeader != null && authHeader.startsWith("Bearer ")
+                ? authHeader.substring(7) : authHeader;
+        if (!tokenProvider.validateToken(token)) {
+            throw new BadRequestException("Invalid or expired token");
+        }
+
+        Long userId = tokenProvider.getUserIdFromToken(token);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new BadRequestException("New password must be different from the current password");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
 }

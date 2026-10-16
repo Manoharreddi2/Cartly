@@ -11,6 +11,8 @@ import Register from './pages/Register.jsx';
 import Orders from './pages/Orders.jsx';
 import Checkout from './pages/Checkout.jsx';
 import OrderConfirmation from './pages/OrderConfirmation.jsx';
+import Wishlist from './pages/Wishlist.jsx';
+import Profile from './pages/Profile.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
 // Protected route wrapper
@@ -42,6 +44,8 @@ const App = () => {
           />
           <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
           <Route path="/order-confirmation" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
+          <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

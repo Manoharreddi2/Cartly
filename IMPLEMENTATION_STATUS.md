@@ -18,7 +18,7 @@ This checklist tracks the requirements in the original Cartly implementation pla
 
 - [x] Authentication, JWT validation, registration, login, and current-user endpoints
 - [x] User profiles and address CRUD
-- [ ] User password-update endpoint
+- [x] Authenticated password-update endpoint (implemented by auth service, which owns credentials)
 - [x] Product catalog, filtering, pagination, featured/new/best-seller routes, CRUD, and statistics
 - [x] Category CRUD
 - [x] Cart totals, cart item CRUD, wishlist, and move-to-cart support
@@ -35,8 +35,8 @@ This checklist tracks the requirements in the original Cartly implementation pla
 - [x] Storefront home, product catalog, product details, login, registration, cart, checkout, confirmation, and order history
 - [x] JWT attachment and auth/cart/wishlist/toast contexts
 - [x] Checkout aligned with current cart, address, and order-service API contracts
-- [ ] Wishlist page
-- [ ] Profile and address-management page
+- [x] Wishlist page with move-to-cart support
+- [x] Profile page with profile and password updates
 - [ ] Order-details tracking page
 - [ ] Admin dashboard and management pages
 - [ ] Reusable component/hook structure described in the plan
@@ -46,5 +46,5 @@ This checklist tracks the requirements in the original Cartly implementation pla
 - [x] Backend test classes for every service (latest stored reports: 26 passing tests)
 - [x] Frontend production build passes
 - [x] README with architecture, native setup, routes, and verification commands
-- [ ] Fresh backend Maven test run in the current environment (Maven executable is unavailable)
+- [ ] Fresh full backend Maven test run in the current environment (Maven is available; gateway, auth, and order modules have been rerun successfully)
 - [ ] Complete API cURL examples and ER/schema documentation

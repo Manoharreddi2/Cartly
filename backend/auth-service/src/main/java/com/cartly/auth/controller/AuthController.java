@@ -40,6 +40,14 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("User profile fetched successfully", user));
     }
 
+    @PutMapping("/password")
+    public ResponseEntity<ApiResponse<Void>> updatePassword(
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody PasswordUpdateRequest request) {
+        authService.updatePassword(authHeader, request);
+        return ResponseEntity.ok(ApiResponse.ok("Password updated successfully", null));
+    }
+
     @GetMapping("/users/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
         UserResponse user = authService.getUserById(id);
