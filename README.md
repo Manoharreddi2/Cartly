@@ -63,6 +63,17 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173). The gateway health endpoint is available at [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health).
 
+### Docker Compose
+
+Copy the environment template, set secure secrets, then start the complete local stack:
+
+```powershell
+Copy-Item .env.example .env
+docker compose up --build
+```
+
+The Docker frontend is served on `http://localhost:${FRONTEND_PORT}` (5173 by default) and proxies API requests to the gateway.
+
 ## Main API routes
 
 All API requests are sent through the gateway at `http://localhost:8080`.

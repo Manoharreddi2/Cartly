@@ -1,0 +1,113 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api-gateway:
+    build:
+      context: ./backend
+      args: { SERVICE: api-gateway }
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      auth-service: { condition: service_started }
+      user-service: { condition: service_started }
+      product-service: { condition: service_started }
+      category-service: { condition: service_started }
+      cart-service: { condition: service_started }
+      order-service: { condition: service_started }
+      payment-service: { condition: service_started }
+      inventory-service: { condition: service_started }
+      notification-service: { condition: service_started }
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8081
+      USER_SERVICE_URL: http://user-service:8082
+      PRODUCT_SERVICE_URL: http://product-service:8083
+      CATEGORY_SERVICE_URL: http://category-service:8084
+      CART_SERVICE_URL: http://cart-service:8085
+      ORDER_SERVICE_URL: http://order-service:8086
+      PAYMENT_SERVICE_URL: http://payment-service:8087
+      INVENTORY_SERVICE_URL: http://inventory-service:8088
+      NOTIFICATION_SERVICE_URL: http://notification-service:8089
+
+  auth-service: &backend-service
+    build: { context: ./backend, args: { SERVICE: auth-service } }
+    depends_on: { mysql: { condition: service_healthy } }
+    environment: &service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_auth_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    restart: on-failure
+
+  user-service:
+    <<: *backend-service
+    build: { context: ./backend, args: { SERVICE: user-service } }
+    environment:
+      <<: *service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_user_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  product-service:
+    <<: *backend-service
+    build: { context: ./backend, args: { SERVICE: product-service } }
+    environment:
+      <<: *service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_product_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  category-service:
+    <<: *backend-service
+    build: { context: ./backend, args: { SERVICE: category-service } }
+    environment:
+      <<: *service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_category_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  cart-service:
+    <<: *backend-service
+    build: { context: ./backend, args: { SERVICE: cart-service } }
+    environment:
+      <<: *service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_cart_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  order-service:
+    <<: *backend-service
+    build: { context: ./backend, args: { SERVICE: order-service } }
+    environment:
+      <<: *service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_order_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      CART_SERVICE_URL: http://cart-service:8085
+      INVENTORY_SERVICE_URL: http://inventory-service:8088
+      PAYMENT_SERVICE_URL: http://payment-service:8087
+      NOTIFICATION_SERVICE_URL: http://notification-service:8089
+  payment-service:
+    <<: *backend-service
+    build: { context: ./backend, args: { SERVICE: payment-service } }
+    environment:
+      <<: *service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_payment_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  inventory-service:
+    <<: *backend-service
+    build: { context: ./backend, args: { SERVICE: inventory-service } }
+    environment:
+      <<: *service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_inventory_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  notification-service:
+    <<: *backend-service
+    build: { context: ./backend, args: { SERVICE: notification-service } }
+    environment:
+      <<: *service-env
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cartly_notification_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on: { api-gateway: { condition: service_started } }
+
+volumes:
+  mysql-data:
